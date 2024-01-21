@@ -1,0 +1,44 @@
+
+---
+- name: test conditonal with package facts
+  hosts: client1
+  tasks:
+    - name: Initialize package facts
+      package_facts:
+    - name: check if linux_academy_package is installed
+      debug:
+        msg:
+          - "Linux academy package does exist"
+      when: 
+        - packages.linux_academy is defined
+    - name: check if tree package exist
+      debug:
+        msg:
+          - "tree pakcage does exist"
+      when:
+        - packages.tree is defined
+
+- name: Check if service is running
+  hosts: client1
+  become: yes
+  tasks:
+    - name: Initialize service facts
+      service_facts:
+    - name: Assert that php is defined
+      assert:
+        that:
+          - "{{ services['php.service'] is defined }}"
+          
+        fail_msg: "php service is not defined"
+        success_msg: "php is defined"
+      ignore_errors: true    
+    - name: Assert that httpd is defined, enabled and it's running
+      assert:
+        that:
+          - "{{ services['httpd.service'] is defined }}"
+          - "{{ services['httpd.service'].state =='running' }}"
+          - "{{ services['httpd.service'].status =='enabled' }}"
+          
+        fail_msg: "httpd is either not defined, started or running"
+        success_msg: "httpd is enabled and running"
+      ignore_errors: true
